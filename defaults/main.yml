@@ -1,0 +1,9 @@
+---
+# defaults file for automatic-ripping-machine-setup/
+arm_setup_armpath: "/vagrant/Data/Media/Unidentified"
+arm_setup_rawpath: "/vagrant/Data/Raw"
+arm_setup_media_dir: "/vagrant/Data/Media/Movies"
+arm_setup_cifs_user: ""
+arm_setup_cifs_password: ""
+arm_setup_cifs_path: ""
+arm_setup_cifs_mount_point: ""

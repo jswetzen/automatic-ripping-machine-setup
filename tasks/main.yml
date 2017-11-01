@@ -1,0 +1,158 @@
+---
+# tasks file for automatic-ripping-machine-setup/
+
+############################################
+# Set variables from environment, if present.
+# It's ugly but I'm not sure how to make it better.
+
+- name: set ARMPATH from environment
+  set_fact:
+    arm_setup_armpath: "{{ ARMPATH }}"
+  when: ARMPATH != ""
+
+- name: set RAWPATH from environment
+  set_fact:
+    arm_setup_rawpath: "{{ RAWPATH }}"
+  when: RAWPATH != ""
+
+- name: set MEDIA_DIR from environment
+  set_fact:
+    arm_setup_media_dir: "{{ MEDIA_DIR }}"
+  when: MEDIA_DIR != ""
+
+- name: set CIFS_USER from environment
+  set_fact:
+    arm_setup_cifs_user: "{{ CIFS_USER }}"
+  when: CIFS_USER != ""
+
+- name: set CIFS_PASSWORD from environment
+  set_fact:
+    arm_setup_cifs_password: "{{ CIFS_PASSWORD }}"
+  when: CIFS_PASSWORD != ""
+
+- name: set CIFS_PATH from environment
+  set_fact:
+    arm_setup_cifs_path: "{{ CIFS_PATH }}"
+  when: CIFS_PATH != ""
+
+- name: set CIFS_MOUNT_POINT from environment
+  set_fact:
+    arm_setup_cifs_mount_point: "{{ CIFS_MOUNT_POINT }}"
+  when: CIFS_MOUNT_POINT != ""
+
+- name: set cifs_password fact if arm_setup_cifs_password is set
+  set_fact:
+    cifs_password: ",password={{ arm_setup_cifs_password }}"
+  when:
+  - arm_setup_cifs_user != ""
+  - arm_setup_cifs_password != ""
+
+- name: set cifs_guest fact if arm_setup_cifs_user is not set
+  set_fact:
+    cifs_username: ""
+    cifs_password: ""
+    cifs_guest: ",guest"
+  when:
+  - arm_setup_cifs_user == ""
+
+# Finished setting variables
+############################
+- name: update apt
+  apt: update_cache=yes
+
+- name: add apt repositories
+  apt_repository:
+    repo: "{{ item }}"
+  with_items:
+  - 'ppa:heyarje/makemkv-beta'
+  - 'ppa:stebbins/handbrake-releases'
+  - 'ppa:mc3man/xerus-media'
+
+- name: update apt
+  apt: update_cache=yes
+
+- name: install packages
+  apt:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+  - git
+  - makemkv-bin
+  - makemkv-oss
+  - handbrake-cli
+  - libavcodec-extra
+  - abcde
+  - flac
+  - imagemagick
+  - glyrc
+  - cdparanoia
+  - at
+  - python3
+  - python3-pip
+  - cifs-utils
+
+- name: install libdvd
+  apt: name=libdvd-pkg state=installed
+  notify: reconfigure libdvd-pkg
+
+# Ensure libdvd-pkg is reconfigured
+- meta: flush_handlers
+
+- name: get A.R.M. from GitHub
+  git:
+    repo: 'https://github.com/ahnooie/automatic-ripping-machine'
+    dest: /opt/arm
+    force: yes
+
+- name: install pip dependencies
+  pip:
+    requirements: '/opt/arm/requirements.txt'
+    executable: pip3
+
+- name: symlink udev rule and abcde config
+  file:
+    src: "/opt/arm/{{ item.src }}"
+    dest: "{{ item.dest_dir }}/{{ item.src }}"
+    state: link
+  with_items:
+  - { src: '51-automedia.rules', dest_dir: '/lib/udev/rules.d/' }
+  - { src: '.abcde.conf', dest_dir: '/root/' }
+
+- name: copy sysytemd upstart
+  copy:
+    src: /opt/arm/arm@.service
+    dest: /etc/systemd/system/arm@.service
+    remote_src: yes
+
+- name: copy ARM config
+  copy:
+    src: config
+    dest: /opt/arm/config
+
+- name: set cifs_username fact if CIFS_USER is set
+  set_fact:
+    cifs_username: ",username={{ arm_setup_cifs_user }}"
+    cifs_password: ""
+    cifs_guest: ""
+  when: CIFS_USER != ""
+
+- name: mount cifs network drive on boot if required
+  mount:
+    name: "{{ arm_setup_cifs_mount_point }}"
+    src: "{{ arm_setup_cifs_path }}"
+    fstype: cifs
+    opts: "rw,user,auto,suid{{ cifs_guest }}{{ cifs_username }}{{ cifs_password }}"
+    state: mounted
+  when:
+  - CIFS_PATH != ""
+  - CIFS_MOUNT_POINT != ""
+
+- name: create directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    recurse: yes
+  with_items:
+  - "{{ arm_setup_armpath }}"
+  - "{{ arm_setup_rawpath }}"
+  - "{{ arm_setup_media_dir }}"
