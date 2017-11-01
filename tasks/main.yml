@@ -40,6 +40,13 @@
     arm_setup_cifs_mount_point: "{{ CIFS_MOUNT_POINT }}"
   when: CIFS_MOUNT_POINT != ""
 
+- name: set cifs_username fact if arm_setup_cifs_user is set
+  set_fact:
+    cifs_username: ",username={{ arm_setup_cifs_user }}"
+    cifs_password: ""
+    cifs_guest: ""
+  when: arm_setup_cifs_user != ""
+
 - name: set cifs_password fact if arm_setup_cifs_password is set
   set_fact:
     cifs_password: ",password={{ arm_setup_cifs_password }}"
@@ -57,6 +64,7 @@
 
 # Finished setting variables
 ############################
+
 - name: update apt
   apt: update_cache=yes
 
@@ -128,13 +136,6 @@
   copy:
     src: config
     dest: /opt/arm/config
-
-- name: set cifs_username fact if CIFS_USER is set
-  set_fact:
-    cifs_username: ",username={{ arm_setup_cifs_user }}"
-    cifs_password: ""
-    cifs_guest: ""
-  when: CIFS_USER != ""
 
 - name: mount cifs network drive on boot if required
   mount:
