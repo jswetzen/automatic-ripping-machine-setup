@@ -1,5 +1,5 @@
 ---
-# defaults file for automatic-ripping-machine-setup/
+# defaults file for automatic-ripping-machine
 arm_setup_armpath: "/vagrant/Data/Media/Unidentified"
 arm_setup_rawpath: "/vagrant/Data/Raw"
 arm_setup_media_dir: "/vagrant/Data/Media/Movies"

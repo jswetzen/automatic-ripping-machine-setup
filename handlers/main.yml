@@ -1,4 +1,4 @@
 ---
-# handlers file for automatic-ripping-machine-setup/
+# handlers file for automatic-ripping-machine
 - name: reconfigure libdvd-pkg
   command: dpkg-reconfigure -fnoninteractive libdvd-pkg
