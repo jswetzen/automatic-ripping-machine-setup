@@ -74,7 +74,6 @@
   with_items:
   - 'ppa:heyarje/makemkv-beta'
   - 'ppa:stebbins/handbrake-releases'
-  - 'ppa:mc3man/xerus-media'
 
 - name: update apt
   apt: update_cache=yes
@@ -82,7 +81,7 @@
 - name: install packages
   apt:
     name: "{{ item }}"
-    state: installed
+    state: present
   with_items:
   - git
   - makemkv-bin
@@ -97,6 +96,8 @@
   - at
   - python3
   - python3-pip
+  - libcurl4-openssl-dev
+  - libssl-dev
   - cifs-utils
 
 - name: install libdvd
@@ -108,7 +109,7 @@
 
 - name: get A.R.M. from GitHub
   git:
-    repo: 'https://github.com/ahnooie/automatic-ripping-machine'
+    repo: 'https://github.com/jswetzen/automatic-ripping-machine'
     dest: /opt/arm
     force: yes
 
