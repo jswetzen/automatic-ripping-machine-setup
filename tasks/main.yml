@@ -101,7 +101,7 @@
   - cifs-utils
 
 - name: install libdvd
-  apt: name=libdvd-pkg state=installed
+  apt: name=libdvd-pkg state=present
   notify: reconfigure libdvd-pkg
 
 # Ensure libdvd-pkg is reconfigured
