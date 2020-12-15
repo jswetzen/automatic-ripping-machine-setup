@@ -78,9 +78,6 @@
 # Finished setting variables
 ############################
 
-- name: update apt
-  apt: update_cache=yes
-
 - name: add apt repositories
   apt_repository:
     repo: "{{ item }}"
@@ -88,30 +85,27 @@
   - 'ppa:heyarje/makemkv-beta'
   - 'ppa:stebbins/handbrake-releases'
 
-- name: update apt
-  apt: update_cache=yes
-
 - name: install packages
   apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-  - git
-  - makemkv-bin
-  - makemkv-oss
-  - handbrake-cli
-  - libavcodec-extra
-  - abcde
-  - flac
-  - imagemagick
-  - glyrc
-  - cdparanoia
-  - at
-  - python3
-  - python3-pip
-  - libcurl4-openssl-dev
-  - libssl-dev
-  - cifs-utils
+    pkg:
+      - git
+      - makemkv-bin
+      - makemkv-oss
+      - handbrake-cli
+      - libavcodec-extra
+      - abcde
+      - flac
+      - imagemagick
+      - glyrc
+      - cdparanoia
+      - at
+      - python3
+      - python3-pip
+      - libcurl4-openssl-dev
+      - libssl-dev
+      - cifs-utils
+    update_cache: yes
+    state: present  
 
 - name: install libdvd
   apt: name=libdvd-pkg state=present
