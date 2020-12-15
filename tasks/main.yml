@@ -153,7 +153,9 @@
     opts: "rw,user,auto,suid{{ cifs_guest }}{{ cifs_username }}{{ cifs_password }}"
     state: mounted
   when:
+  - CIFS_PATH is defined
   - CIFS_PATH != ""
+  - CIFS_MOUNT_POINT is defined
   - CIFS_MOUNT_POINT != ""
 
 - name: create directories
