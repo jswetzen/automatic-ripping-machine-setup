@@ -8,37 +8,50 @@
 - name: set ARMPATH from environment
   set_fact:
     arm_setup_armpath: "{{ ARMPATH }}"
-  when: ARMPATH != ""
+  when:
+  - ARMPATH is defined
+  - ARMPATH != ""
 
 - name: set RAWPATH from environment
   set_fact:
     arm_setup_rawpath: "{{ RAWPATH }}"
-  when: RAWPATH != ""
+  when:
+  - RAWPATH is defined
+  - RAWPATH != ""
 
 - name: set MEDIA_DIR from environment
   set_fact:
     arm_setup_media_dir: "{{ MEDIA_DIR }}"
-  when: MEDIA_DIR != ""
-
+  when:
+  - MEDIA_DIR is defined
+  - MEDIA_DIR != ""
 - name: set CIFS_USER from environment
   set_fact:
     arm_setup_cifs_user: "{{ CIFS_USER }}"
-  when: CIFS_USER != ""
+  when:
+  - CIFS_USER is defined
+  - CIFS_USER != ""
 
 - name: set CIFS_PASSWORD from environment
   set_fact:
     arm_setup_cifs_password: "{{ CIFS_PASSWORD }}"
-  when: CIFS_PASSWORD != ""
+  when:
+  - CIFS_PASSWORD is defined
+  - CIFS_PASSWORD != ""
 
 - name: set CIFS_PATH from environment
   set_fact:
     arm_setup_cifs_path: "{{ CIFS_PATH }}"
-  when: CIFS_PATH != ""
+  when:
+  - CIFS_PATH is defined
+  - CIFS_PATH != ""
 
 - name: set CIFS_MOUNT_POINT from environment
   set_fact:
     arm_setup_cifs_mount_point: "{{ CIFS_MOUNT_POINT }}"
-  when: CIFS_MOUNT_POINT != ""
+  when:
+  - CIFS_PATH is defined
+  - CIFS_PATH != ""
 
 - name: set cifs_username fact if arm_setup_cifs_user is set
   set_fact:
