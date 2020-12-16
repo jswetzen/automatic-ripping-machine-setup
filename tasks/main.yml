@@ -84,6 +84,7 @@
   with_items:
   - 'ppa:heyarje/makemkv-beta'
   - 'ppa:stebbins/handbrake-releases'
+  - 'ppa:mc3man/bionic-prop'
 
 - name: install packages
   apt:
@@ -107,6 +108,9 @@
     update_cache: yes
     state: present  
 
+- name: install JRE
+  apt: name=default-jre-headless state=present
+
 - name: install libdvd
   apt: name=libdvd-pkg state=present
   notify: reconfigure libdvd-pkg
@@ -114,11 +118,24 @@
 # Ensure libdvd-pkg is reconfigured
 - meta: flush_handlers
 
+- name: Ensure arm group exists
+  group:
+    name: arm
+    state: present
+
+- name: ensure arm user exists with the right groups
+  user:
+    name: arm
+    groups: cdrom
+    append: yes
+
 - name: get A.R.M. from GitHub
   git:
     repo: 'https://github.com/jswetzen/automatic-ripping-machine'
     dest: /opt/arm
     force: yes
+    umask: 775
+    version: v2.1_dev
 
 - name: install pip dependencies
   pip:
@@ -127,23 +144,23 @@
 
 - name: symlink udev rule and abcde config
   file:
-    src: "/opt/arm/{{ item.src }}"
+    src: "/opt/arm/setup/{{ item.src }}"
     dest: "{{ item.dest_dir }}/{{ item.src }}"
     state: link
   with_items:
   - { src: '51-automedia.rules', dest_dir: '/lib/udev/rules.d/' }
-  - { src: '.abcde.conf', dest_dir: '/root/' }
-
-- name: copy sysytemd upstart
-  copy:
-    src: /opt/arm/arm@.service
-    dest: /etc/systemd/system/arm@.service
-    remote_src: yes
+  - { src: '.abcde.conf', dest_dir: '/home/arm/' }
 
 - name: copy ARM config
   copy:
-    src: config
-    dest: /opt/arm/config
+    src: arm.yaml
+    dest: /opt/arm/arm.yaml
+
+- name: symlink arm config
+  file:
+    src: /opt/arm/arm.yaml
+    dest: /etc/arm/arm.yaml
+    state: link
 
 - name: mount cifs network drive on boot if required
   mount:
@@ -167,3 +184,17 @@
   - "{{ arm_setup_armpath }}"
   - "{{ arm_setup_rawpath }}"
   - "{{ arm_setup_media_dir }}"
+
+- name: set up drive mount point
+  file:
+    path: /mnt/dev/sr0
+    state: directory
+    recurse: yes
+  become: true
+
+- name: ensure fstab entry exists for drive
+  lineinfile:
+    path: /etc/fstab
+    state: present
+    line: "/dev/sr0  /mnt/dev/sr0  udf,iso9660  user,noauto,exec,utf8  0  0"
+  become: true
