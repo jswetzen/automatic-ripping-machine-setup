@@ -8,37 +8,50 @@
 - name: set ARMPATH from environment
   set_fact:
     arm_setup_armpath: "{{ ARMPATH }}"
-  when: ARMPATH != ""
+  when:
+  - ARMPATH is defined
+  - ARMPATH != ""
 
 - name: set RAWPATH from environment
   set_fact:
     arm_setup_rawpath: "{{ RAWPATH }}"
-  when: RAWPATH != ""
+  when:
+  - RAWPATH is defined
+  - RAWPATH != ""
 
 - name: set MEDIA_DIR from environment
   set_fact:
     arm_setup_media_dir: "{{ MEDIA_DIR }}"
-  when: MEDIA_DIR != ""
-
+  when:
+  - MEDIA_DIR is defined
+  - MEDIA_DIR != ""
 - name: set CIFS_USER from environment
   set_fact:
     arm_setup_cifs_user: "{{ CIFS_USER }}"
-  when: CIFS_USER != ""
+  when:
+  - CIFS_USER is defined
+  - CIFS_USER != ""
 
 - name: set CIFS_PASSWORD from environment
   set_fact:
     arm_setup_cifs_password: "{{ CIFS_PASSWORD }}"
-  when: CIFS_PASSWORD != ""
+  when:
+  - CIFS_PASSWORD is defined
+  - CIFS_PASSWORD != ""
 
 - name: set CIFS_PATH from environment
   set_fact:
     arm_setup_cifs_path: "{{ CIFS_PATH }}"
-  when: CIFS_PATH != ""
+  when:
+  - CIFS_PATH is defined
+  - CIFS_PATH != ""
 
 - name: set CIFS_MOUNT_POINT from environment
   set_fact:
     arm_setup_cifs_mount_point: "{{ CIFS_MOUNT_POINT }}"
-  when: CIFS_MOUNT_POINT != ""
+  when:
+  - CIFS_PATH is defined
+  - CIFS_PATH != ""
 
 - name: set cifs_username fact if arm_setup_cifs_user is set
   set_fact:
@@ -65,9 +78,6 @@
 # Finished setting variables
 ############################
 
-- name: update apt
-  apt: update_cache=yes
-
 - name: add apt repositories
   apt_repository:
     repo: "{{ item }}"
@@ -75,30 +85,27 @@
   - 'ppa:heyarje/makemkv-beta'
   - 'ppa:stebbins/handbrake-releases'
 
-- name: update apt
-  apt: update_cache=yes
-
 - name: install packages
   apt:
-    name: "{{ item }}"
-    state: present
-  with_items:
-  - git
-  - makemkv-bin
-  - makemkv-oss
-  - handbrake-cli
-  - libavcodec-extra
-  - abcde
-  - flac
-  - imagemagick
-  - glyrc
-  - cdparanoia
-  - at
-  - python3
-  - python3-pip
-  - libcurl4-openssl-dev
-  - libssl-dev
-  - cifs-utils
+    pkg:
+      - git
+      - makemkv-bin
+      - makemkv-oss
+      - handbrake-cli
+      - libavcodec-extra
+      - abcde
+      - flac
+      - imagemagick
+      - glyrc
+      - cdparanoia
+      - at
+      - python3
+      - python3-pip
+      - libcurl4-openssl-dev
+      - libssl-dev
+      - cifs-utils
+    update_cache: yes
+    state: present  
 
 - name: install libdvd
   apt: name=libdvd-pkg state=present
@@ -146,7 +153,9 @@
     opts: "rw,user,auto,suid{{ cifs_guest }}{{ cifs_username }}{{ cifs_password }}"
     state: mounted
   when:
+  - CIFS_PATH is defined
   - CIFS_PATH != ""
+  - CIFS_MOUNT_POINT is defined
   - CIFS_MOUNT_POINT != ""
 
 - name: create directories
